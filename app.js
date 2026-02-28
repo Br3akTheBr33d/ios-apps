@@ -1336,12 +1336,10 @@ async function checkOAuthCallback() {
 
   const expiresIn = parseInt(hashParams.get('expires_in') || '3600', 10);
 
-  // Bestehende Einstellungen laden, Token eintragen
-  const stored = await chrome.storage.local.get(['driveBackup']);
-  driveBackupSettings = stored.driveBackup || { ...DEFAULT_DRIVE_SETTINGS };
+  // loadData() hat driveBackupSettings bereits geladen — direkt in-place modifizieren
   driveBackupSettings.accessToken = accessToken;
   driveBackupSettings.tokenExpiry = Date.now() + expiresIn * 1000;
-  driveBackupSettings.connected = true;
+  driveBackupSettings.enabled = true;
   await persistDriveBackupSettings();
 
   console.log('OAuth callback: Token gespeichert, gültig für', expiresIn, 'Sekunden');
