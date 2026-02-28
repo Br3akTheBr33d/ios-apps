@@ -151,8 +151,12 @@ async function getBrowserType() {
 
 function getRedirectUri() {
   // Dynamisch aus der aktuellen URL ableiten — passt immer zur Deployment-URL
-  const base = window.location.origin + window.location.pathname;
-  return base.endsWith('/') ? base : base + '/';
+  // Dateinamen entfernen (im Standalone-Modus enthält pathname /index.html)
+  const origin = window.location.origin;
+  let path = window.location.pathname;
+  if (path.includes('.')) path = path.substring(0, path.lastIndexOf('/') + 1);
+  else if (!path.endsWith('/')) path += '/';
+  return origin + path;
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -1749,13 +1753,18 @@ function openTabModal(colId = null, tab = null) {
 }
 
 function openUrl(url) {
-  const a = document.createElement('a');
-  a.href = url;
-  a.target = '_blank';
-  a.rel = 'noopener noreferrer';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  // window.open mit _blank öffnet im iOS PWA Standalone-Modus den externen Safari
+  const win = window.open(url, '_blank', 'noopener,noreferrer');
+  if (!win) {
+    // Fallback falls Popup-Blocker aktiv
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 }
 
 function openWorkspaceModal(ws = null) {

@@ -1,0 +1,355 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+<defs>
+
+  <!-- Sky gradient: deep blue → cerulean → pale at horizon -->
+  <linearGradient id="skyG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"   stop-color="#083060"/>
+    <stop offset="30%"  stop-color="#1565c0"/>
+    <stop offset="65%"  stop-color="#42a5e8"/>
+    <stop offset="100%" stop-color="#90cff5"/>
+  </linearGradient>
+
+  <!-- Sun halo (outer glow) -->
+  <radialGradient id="sunHaloG" cx="50%" cy="50%" r="50%">
+    <stop offset="0%"   stop-color="#fff4a0" stop-opacity="0.9"/>
+    <stop offset="45%"  stop-color="#ffcc00" stop-opacity="0.35"/>
+    <stop offset="100%" stop-color="#ff8800" stop-opacity="0"/>
+  </radialGradient>
+
+  <!-- Sun body (off-center highlight = 3D sphere feel) -->
+  <radialGradient id="sunBodyG" cx="38%" cy="32%" r="68%">
+    <stop offset="0%"   stop-color="#fffde0"/>
+    <stop offset="25%"  stop-color="#ffe564"/>
+    <stop offset="65%"  stop-color="#ffc107"/>
+    <stop offset="100%" stop-color="#e65c00"/>
+  </radialGradient>
+
+  <!-- Ocean far (deep) → near (lighter teal) -->
+  <linearGradient id="oceanG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"   stop-color="#0d3d80"/>
+    <stop offset="35%"  stop-color="#1565c0"/>
+    <stop offset="70%"  stop-color="#0288d1"/>
+    <stop offset="100%" stop-color="#29b6f6"/>
+  </linearGradient>
+
+  <!-- Deeper water layer -->
+  <linearGradient id="deepG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"   stop-color="#081e40" stop-opacity="0.55"/>
+    <stop offset="100%" stop-color="#081e40" stop-opacity="0"/>
+  </linearGradient>
+
+  <!-- Sun reflection on water -->
+  <linearGradient id="reflectG" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%"   stop-color="white" stop-opacity="0"/>
+    <stop offset="35%"  stop-color="white" stop-opacity="0.55"/>
+    <stop offset="50%"  stop-color="white" stop-opacity="0.85"/>
+    <stop offset="65%"  stop-color="white" stop-opacity="0.55"/>
+    <stop offset="100%" stop-color="white" stop-opacity="0"/>
+  </linearGradient>
+
+  <!-- Sand (warm gold top → rich amber bottom) -->
+  <linearGradient id="sandG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"   stop-color="#f5d870"/>
+    <stop offset="45%"  stop-color="#e8c048"/>
+    <stop offset="100%" stop-color="#c09830"/>
+  </linearGradient>
+
+  <!-- Wet sand near waterline -->
+  <linearGradient id="wetG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"   stop-color="#b09045"/>
+    <stop offset="100%" stop-color="#987530"/>
+  </linearGradient>
+
+  <!-- Sand ambient shadow (foreground depth) -->
+  <linearGradient id="sandShadowG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"   stop-color="#6b4800" stop-opacity="0"/>
+    <stop offset="100%" stop-color="#6b4800" stop-opacity="0.35"/>
+  </linearGradient>
+
+  <!-- Palm trunk -->
+  <linearGradient id="trunkG" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%"   stop-color="#5a3810"/>
+    <stop offset="35%"  stop-color="#8d6028"/>
+    <stop offset="65%"  stop-color="#a87535"/>
+    <stop offset="100%" stop-color="#6a4518"/>
+  </linearGradient>
+
+  <!-- Coconut 3D shading -->
+  <radialGradient id="cocoG" cx="32%" cy="28%" r="70%">
+    <stop offset="0%"   stop-color="#d09840"/>
+    <stop offset="60%"  stop-color="#a07020"/>
+    <stop offset="100%" stop-color="#6b4510"/>
+  </radialGradient>
+
+  <!-- Umbrella red panels -->
+  <linearGradient id="umbRedG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#ef5350"/>
+    <stop offset="100%" stop-color="#b71c1c"/>
+  </linearGradient>
+
+  <!-- Umbrella yellow panels -->
+  <linearGradient id="umbYelG" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#fff176"/>
+    <stop offset="100%" stop-color="#f9a825"/>
+  </linearGradient>
+
+  <!-- Towel gradient -->
+  <linearGradient id="towelG" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%"   stop-color="#0d47a1"/>
+    <stop offset="50%"  stop-color="#1976d2"/>
+    <stop offset="100%" stop-color="#0d47a1"/>
+  </linearGradient>
+
+  <!-- Clip rounded corners -->
+  <clipPath id="clip">
+    <rect width="512" height="512" rx="96" ry="96"/>
+  </clipPath>
+
+  <!-- Soft drop shadow filter -->
+  <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#00000066"/>
+  </filter>
+
+  <!-- Glow filter -->
+  <filter id="glowF" x="-50%" y="-50%" width="200%" height="200%">
+    <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur"/>
+    <feMerge>
+      <feMergeNode in="blur"/>
+      <feMergeNode in="SourceGraphic"/>
+    </feMerge>
+  </filter>
+
+</defs>
+
+<g clip-path="url(#clip)">
+
+  <!-- ═══ SKY ═══ -->
+  <rect width="512" height="512" fill="url(#skyG)"/>
+
+  <!-- Horizon atmospheric haze -->
+  <rect x="0" y="235" width="512" height="45" fill="#90cff5" opacity="0.28"/>
+
+  <!-- ═══ CLOUDS ═══ -->
+  <!-- Cloud far left -->
+  <g opacity="0.72">
+    <ellipse cx="72"  cy="90"  rx="58" ry="21" fill="white"/>
+    <ellipse cx="100" cy="78"  rx="44" ry="19" fill="white"/>
+    <ellipse cx="48"  cy="97"  rx="38" ry="17" fill="white"/>
+    <ellipse cx="75"  cy="105" rx="52" ry="11" fill="#dceeff" opacity="0.7"/>
+  </g>
+  <!-- Cloud mid-right (smaller = farther away) -->
+  <g opacity="0.60">
+    <ellipse cx="285" cy="68"  rx="38" ry="15" fill="white"/>
+    <ellipse cx="308" cy="59"  rx="28" ry="13" fill="white"/>
+    <ellipse cx="262" cy="73"  rx="26" ry="12" fill="white"/>
+    <ellipse cx="286" cy="79"  rx="36" ry="9"  fill="#dceeff" opacity="0.65"/>
+  </g>
+
+  <!-- ═══ SUN ═══ -->
+  <!-- Outer corona / halo -->
+  <circle cx="400" cy="112" r="110" fill="url(#sunHaloG)" filter="url(#glowF)"/>
+  <!-- Mid glow ring -->
+  <circle cx="400" cy="112" r="78"  fill="#ffe566" opacity="0.22"/>
+  <!-- Sun disc -->
+  <circle cx="400" cy="112" r="56"  fill="url(#sunBodyG)"/>
+  <!-- Specular highlight (top-left bright spot = 3D sphere) -->
+  <ellipse cx="383" cy="95" rx="19" ry="13" fill="white" opacity="0.42"/>
+
+  <!-- ═══ SEAGULLS ═══ -->
+  <path d="M158 148 Q166 140 175 148" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M188 130 Q198 122 208 130" fill="none" stroke="white" stroke-width="2"   stroke-linecap="round"/>
+  <path d="M220 158 Q227 152 235 158" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+
+  <!-- ═══ OCEAN ═══ -->
+  <!-- Ocean body -->
+  <path d="M0 262 Q85 252 170 260 Q255 268 340 258 Q420 250 512 258 L512 512 L0 512 Z"
+        fill="url(#oceanG)"/>
+  <!-- Deep overlay -->
+  <rect x="0" y="262" width="512" height="248" fill="url(#deepG)"/>
+
+  <!-- Horizon wave line -->
+  <path d="M0 262 Q85 254 170 262 Q255 270 340 260 Q420 252 512 260"
+        fill="none" stroke="white" stroke-width="2.5" opacity="0.45"/>
+
+  <!-- Small far waves -->
+  <path d="M18 274  Q42 267 66 274"  fill="none" stroke="white" stroke-width="2"   stroke-linecap="round" opacity="0.55"/>
+  <path d="M95 283  Q124 275 153 283" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.48"/>
+  <path d="M188 272 Q212 265 236 272" fill="none" stroke="white" stroke-width="1.8" stroke-linecap="round" opacity="0.48"/>
+  <path d="M268 280 Q290 273 312 280" fill="none" stroke="white" stroke-width="1.6" stroke-linecap="round" opacity="0.42"/>
+  <path d="M445 268 Q468 261 490 268" fill="none" stroke="white" stroke-width="2"   stroke-linecap="round" opacity="0.52"/>
+
+  <!-- Sun reflection path on water -->
+  <ellipse cx="408" cy="295" rx="115" ry="15" fill="url(#reflectG)" opacity="0.65"/>
+  <ellipse cx="403" cy="314" rx="72"  ry="9"  fill="url(#reflectG)" opacity="0.45"/>
+  <ellipse cx="410" cy="329" rx="46"  ry="6"  fill="url(#reflectG)" opacity="0.30"/>
+
+  <!-- Mid-water dark layer (depth illusion) -->
+  <path d="M0 316 Q100 306 200 314 Q300 322 400 312 Q460 308 512 314 L512 512 L0 512 Z"
+        fill="#0a3060" opacity="0.38"/>
+
+  <!-- Near-shore wave breaking -->
+  <path d="M0 354 Q80 342 162 350 Q244 358 328 348 Q418 338 512 346"
+        fill="none" stroke="white" stroke-width="4.5" stroke-linecap="round" opacity="0.52"/>
+  <path d="M0 358 Q80 347 162 355 Q244 363 328 352 Q418 343 512 351"
+        fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" opacity="0.28"/>
+
+  <!-- ═══ SAND ═══ -->
+  <path d="M0 368 Q85 355 170 363 Q255 371 340 360 Q425 349 512 357 L512 512 L0 512 Z"
+        fill="url(#sandG)"/>
+
+  <!-- Wet sand strip at waterline -->
+  <path d="M0 368 Q85 357 170 365 Q255 373 340 362 Q425 351 512 359
+           L512 384 Q425 375 340 386 Q255 397 170 389 Q85 381 0 392 Z"
+        fill="url(#wetG)" opacity="0.55"/>
+
+  <!-- Sand highlight ridge (3D crest) -->
+  <path d="M0 368 Q85 357 170 365 Q255 373 340 362 Q425 351 512 359"
+        fill="none" stroke="#fdf5b0" stroke-width="3" opacity="0.45"/>
+
+  <!-- Sand ambient shadow toward foreground -->
+  <rect x="0" y="368" width="512" height="144" fill="url(#sandShadowG)"/>
+
+  <!-- Footprints -->
+  <ellipse cx="208" cy="412" rx="5" ry="3.5" fill="#b89030" opacity="0.38" transform="rotate(-18,208,412)"/>
+  <ellipse cx="220" cy="423" rx="5" ry="3.5" fill="#b89030" opacity="0.38" transform="rotate(-18,220,423)"/>
+  <ellipse cx="232" cy="436" rx="5" ry="3.5" fill="#b89030" opacity="0.38" transform="rotate(-18,232,436)"/>
+
+  <!-- Shell -->
+  <path d="M268 460 Q277 449 286 458 Q291 471 278 474 Q265 471 268 460 Z"
+        fill="#f2d898" opacity="0.88"/>
+  <path d="M278 450 L278 474" stroke="#c8a038" stroke-width="1.2" opacity="0.5"/>
+  <path d="M268 461 Q278 465 286 459" stroke="#c8a038" stroke-width="1" fill="none" opacity="0.45"/>
+
+  <!-- Starfish -->
+  <g transform="translate(340,455)" opacity="0.75">
+    <path d="M0,-11 L2.5,-3.5 L10,-3.5 L4,1.5 L6,9 L0,4.5 L-6,9 L-4,1.5 L-10,-3.5 L-2.5,-3.5 Z"
+          fill="#e07830" filter="url(#softShadow)"/>
+    <!-- Starfish highlight -->
+    <ellipse cx="-2" cy="-5" rx="3" ry="2" fill="#f0a050" opacity="0.55"/>
+  </g>
+
+  <!-- ═══ PALM TREE ═══ -->
+
+  <!-- Ground shadow (ellipse on sand) -->
+  <ellipse cx="130" cy="388" rx="52" ry="7" fill="#8b6a18" opacity="0.22"/>
+
+  <!-- Trunk (3 strokes = shadow / body / highlight) -->
+  <path d="M132 392 Q126 348 122 304 Q119 270 126 237"
+        stroke="#3d2008" stroke-width="17" fill="none" stroke-linecap="round"/>
+  <path d="M132 392 Q126 348 122 304 Q119 270 126 237"
+        stroke="url(#trunkG)" stroke-width="13" fill="none" stroke-linecap="round"/>
+  <path d="M132 390 Q128 346 124 302 Q122 268 128 235"
+        stroke="#c8904a" stroke-width="5"  fill="none" stroke-linecap="round" opacity="0.65"/>
+
+  <!-- Trunk ring markings -->
+  <path d="M122 360 Q127 357 133 360" stroke="#5a3010" stroke-width="1.8" fill="none" opacity="0.6"/>
+  <path d="M121 340 Q126 337 132 340" stroke="#5a3010" stroke-width="1.8" fill="none" opacity="0.6"/>
+  <path d="M120 320 Q125 317 131 320" stroke="#5a3010" stroke-width="1.8" fill="none" opacity="0.6"/>
+  <path d="M120 300 Q125 297 131 300" stroke="#5a3010" stroke-width="1.8" fill="none" opacity="0.55"/>
+  <path d="M121 280 Q126 277 132 280" stroke="#5a3010" stroke-width="1.8" fill="none" opacity="0.55"/>
+  <path d="M122 262 Q127 259 133 262" stroke="#5a3010" stroke-width="1.5" fill="none" opacity="0.5"/>
+
+  <!-- FRONDS (layered for depth) -->
+  <!-- Each frond: filled shape + center rib line -->
+
+  <!-- Far-right frond -->
+  <path d="M126 237 Q162 192 194 163 Q180 182 162 206 Q144 228 128 242 Z" fill="#2e7d32"/>
+  <path d="M126 237 Q164 190 196 161" stroke="#1b5e20" stroke-width="1.5" fill="none"/>
+
+  <!-- Right frond -->
+  <path d="M126 238 Q170 224 204 218 Q183 224 160 232 Q143 238 128 243 Z" fill="#388e3c"/>
+  <path d="M126 238 Q172 222 207 216" stroke="#2e7d32" stroke-width="1.5" fill="none"/>
+
+  <!-- Right-low frond -->
+  <path d="M126 243 Q164 250 196 265 Q172 254 150 249 Q138 246 128 245 Z" fill="#2e7d32"/>
+  <path d="M126 243 Q167 249 198 264" stroke="#1b5e20" stroke-width="1.5" fill="none"/>
+
+  <!-- Far-left frond -->
+  <path d="M126 237 Q90 192 58 163 Q72 182 90 206 Q108 228 124 242 Z" fill="#33883b"/>
+  <path d="M126 237 Q88 190 56 161" stroke="#2e7d32" stroke-width="1.5" fill="none"/>
+
+  <!-- Left frond -->
+  <path d="M126 238 Q84 225 48 220 Q70 224 94 232 Q110 238 122 243 Z" fill="#388e3c"/>
+  <path d="M126 238 Q80 224 45 219" stroke="#2e7d32" stroke-width="1.5" fill="none"/>
+
+  <!-- Left-low frond -->
+  <path d="M126 243 Q90 250 58 266 Q82 254 104 249 Q116 246 122 245 Z" fill="#2e7d32"/>
+  <path d="M126 243 Q87 250 56 265" stroke="#1b5e20" stroke-width="1.5" fill="none"/>
+
+  <!-- Top frond -->
+  <path d="M126 234 Q120 192 114 157 Q118 178 122 202 Q124 220 126 238 Z" fill="#43a047"/>
+  <path d="M126 234 Q119 190 113 155" stroke="#2e7d32" stroke-width="1.5" fill="none"/>
+
+  <!-- Top-right frond -->
+  <path d="M126 235 Q150 197 170 170 Q158 190 144 212 Q134 224 127 238 Z" fill="#388e3c"/>
+  <path d="M126 235 Q152 195 173 168" stroke="#2e7d32" stroke-width="1.2" fill="none"/>
+
+  <!-- Top-left frond -->
+  <path d="M126 235 Q102 197 82 170 Q94 190 108 212 Q118 224 125 238 Z" fill="#33883b"/>
+  <path d="M126 235 Q100 195 80 168" stroke="#2e7d32" stroke-width="1.2" fill="none"/>
+
+  <!-- Coconuts (3D spheres with radial gradient) -->
+  <circle cx="122" cy="251" r="9.5" fill="url(#cocoG)"/>
+  <circle cx="133" cy="257" r="8.5" fill="url(#cocoG)"/>
+  <circle cx="115" cy="258" r="8.5" fill="url(#cocoG)"/>
+
+  <!-- ═══ BEACH UMBRELLA ═══ -->
+
+  <!-- Pole shadow on sand -->
+  <path d="M392 482 Q388 445 384 402" stroke="#9a8015" stroke-width="3"
+        fill="none" opacity="0.25" stroke-linecap="round"/>
+  <!-- Pole -->
+  <path d="M389 482 Q385 445 381 402" stroke="#d4bc58" stroke-width="5.5"
+        fill="none" stroke-linecap="round"/>
+  <!-- Pole highlight -->
+  <path d="M387 482 Q383 445 379 402" stroke="#f8e88a" stroke-width="2"
+        fill="none" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Umbrella canopy shadow on sand -->
+  <ellipse cx="368" cy="405" rx="72" ry="9" fill="#8b6a00" opacity="0.18"
+           transform="skewX(-12)"/>
+
+  <!-- Canopy built from pie-like segments alternating red / yellow -->
+  <!-- Segment 1 (red) -->
+  <path d="M381 374 L324 396 Q333 382 351 375 Z" fill="url(#umbRedG)"/>
+  <!-- Segment 2 (yellow) -->
+  <path d="M381 374 L351 375 Q363 370 381 374 Z" fill="url(#umbYelG)"/>
+  <!-- Segment 3 (red) -->
+  <path d="M381 374 L381 374 Q395 369 411 373 L381 374 Z" fill="url(#umbRedG)"/>
+  <!-- Segment 4 (yellow) -->
+  <path d="M381 374 L411 373 Q425 378 438 390 Z" fill="url(#umbYelG)"/>
+  <!-- Segment 5 (red) -->
+  <path d="M381 374 L438 390 Q445 396 438 390 Z" fill="url(#umbRedG)"/>
+
+  <!-- Full canopy outline for shape clarity -->
+  <path d="M324 396 Q352 375 381 374 Q412 371 440 390 Q420 382 408 377 Q394 371 381 374 Q367 372 350 379 Q334 385 324 396 Z"
+        fill="#ef5350" opacity="0.15"/>
+  <path d="M324 396 Q352 376 381 374 Q412 371 440 390"
+        fill="none" stroke="#b71c1c" stroke-width="1.8" opacity="0.7"/>
+
+  <!-- Canopy ribs -->
+  <line x1="381" y1="374" x2="324" y2="396" stroke="#c62828" stroke-width="1.2" opacity="0.5"/>
+  <line x1="381" y1="374" x2="440" y2="390" stroke="#c62828" stroke-width="1.2" opacity="0.5"/>
+  <line x1="381" y1="374" x2="351" y2="395" stroke="#c62828" stroke-width="1"   opacity="0.4"/>
+  <line x1="381" y1="374" x2="412" y2="393" stroke="#c62828" stroke-width="1"   opacity="0.4"/>
+
+  <!-- Canopy centre button -->
+  <circle cx="381" cy="374" r="6.5" fill="#b71c1c"/>
+  <circle cx="379" cy="372" r="2.5" fill="#ef5350" opacity="0.7"/>
+
+  <!-- ═══ BEACH TOWEL ═══ -->
+  <path d="M333 428 Q367 420 402 424 Q418 426 432 432 Q418 440 402 442 Q367 446 333 441 Q320 436 333 428 Z"
+        fill="url(#towelG)" opacity="0.85" filter="url(#softShadow)"/>
+  <!-- Towel stripe highlights -->
+  <path d="M336 430 Q368 423 402 426 Q416 428 430 434"
+        stroke="white" stroke-width="2.2" fill="none" opacity="0.38"/>
+  <path d="M334 436 Q368 430 402 433 Q416 434 430 439"
+        stroke="white" stroke-width="1.5" fill="none" opacity="0.25"/>
+
+</g>
+
+<!-- Subtle dark rim for icon definition -->
+<rect width="512" height="512" rx="96" ry="96"
+      fill="none" stroke="rgba(0,20,60,0.22)" stroke-width="5"/>
+
+</svg>

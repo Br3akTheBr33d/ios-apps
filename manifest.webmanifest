@@ -2,7 +2,7 @@
   "name": "Workspace Pro",
   "short_name": "Workspaces",
   "description": "Tab & Workspace Manager — Workspaces, Collections, Widgets",
-  "start_url": "./index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#ff3366",
