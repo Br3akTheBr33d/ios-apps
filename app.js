@@ -342,6 +342,23 @@ function setupEventListeners() {
 
   // Enter key support for modal inputs
   setupEnterKeySupport();
+
+  // Mobile Sidebar Toggle
+  document.getElementById('sidebarToggle')
+    ?.addEventListener('click', () => toggleSidebar());
+  document.getElementById('sidebarBackdrop')
+    ?.addEventListener('click', () => toggleSidebar(false));
+
+  // Sidebar auf Mobile automatisch schließen nach Navigation
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.addEventListener('click', () => {
+      if (window.innerWidth <= 768) toggleSidebar(false);
+    });
+  });
+  document.getElementById('settingsBtn')
+    ?.addEventListener('click', () => {
+      if (window.innerWidth <= 768) toggleSidebar(false);
+    });
 }
 
 // =====================================================
@@ -377,6 +394,20 @@ function setupEnterKeySupport() {
       }
     });
   }
+}
+
+// =====================================================
+// Mobile Sidebar Toggle
+// =====================================================
+function toggleSidebar(force) {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebarBackdrop');
+  if (!sidebar || !backdrop) return;
+  const shouldOpen = force !== undefined
+    ? force
+    : !sidebar.classList.contains('sidebar-open');
+  sidebar.classList.toggle('sidebar-open', shouldOpen);
+  backdrop.classList.toggle('active', shouldOpen);
 }
 
 function setupTabPreview() {

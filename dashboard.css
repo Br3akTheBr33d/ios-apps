@@ -1483,3 +1483,137 @@ body::before {
   -webkit-user-select: none;
   user-select: none;
 }
+
+/* =====================================================
+   Mobile Responsive Optimierungen (< 768px)
+   ===================================================== */
+
+/* A) Sidebar als Slide-In Overlay */
+@media (max-width: 768px) {
+  .app { position: relative; overflow: hidden; }
+
+  .sidebar {
+    position: fixed;
+    top: 0; left: 0; height: 100%;
+    width: 280px; z-index: 1000;
+    transform: translateX(-280px);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .sidebar.sidebar-open {
+    transform: translateX(0);
+    box-shadow: 4px 0 40px rgba(0, 0, 0, 0.7);
+  }
+
+  .sidebar-backdrop {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.65); z-index: 999;
+    backdrop-filter: blur(2px);
+    transition: opacity 0.3s;
+  }
+  .sidebar-backdrop.active { display: block; }
+
+  .main-content { width: 100%; min-width: 0; }
+
+  /* Hamburger-Button: fixed oben links */
+  .hamburger-btn {
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    width: 28px; height: 20px;
+    background: none; border: none;
+    cursor: pointer; padding: 0; flex-shrink: 0;
+    position: fixed;
+    top: calc(16px + env(safe-area-inset-top, 0px));
+    left: 16px;
+    z-index: 998;
+  }
+  .hamburger-btn span {
+    display: block; height: 2.5px;
+    background: var(--text-primary);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+}
+
+@media (min-width: 769px) {
+  .hamburger-btn { display: none !important; }
+  .sidebar-backdrop { display: none !important; }
+}
+
+/* B) View Header */
+@media (max-width: 768px) {
+  .view-header {
+    padding: calc(52px + env(safe-area-inset-top, 0px)) 16px 16px;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  .view-header h1 { font-size: 20px; }
+  .view-header .subtitle { font-size: 12px; }
+  .view-actions { flex-wrap: wrap; gap: 8px; }
+  .view-actions .btn-primary,
+  .view-actions .btn-secondary { font-size: 13px; padding: 8px 14px; }
+  .breadcrumb { flex-wrap: wrap; line-height: 1.6; }
+}
+
+/* C) Content Area + Grids */
+@media (max-width: 768px) {
+  .content-area { padding: 16px; }
+  .workspaces-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+  }
+  .workspace-card { padding: 16px; }
+  .tabs-grid { grid-template-columns: 1fr; gap: 8px; }
+  .widget-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px; }
+  .widget-2x1, .widget-3x1,
+  .widget-2x2, .widget-3x2 { grid-column: span 2 !important; }
+}
+
+/* D) Cards */
+@media (max-width: 768px) {
+  .collection-card { padding: 14px; }
+  .history-card { padding: 14px; }
+  .history-actions { flex-wrap: wrap; gap: 6px; }
+  .tab-url { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+/* E) Modals */
+@media (max-width: 768px) {
+  .modal-content {
+    width: 96% !important;
+    max-height: 92vh;
+    border-radius: 16px;
+  }
+  .modal-content.large { max-width: none; }
+  .modal-body { padding: 16px; }
+  .modal-footer { padding: 12px 16px; gap: 8px; flex-wrap: wrap; }
+  .modal-footer .btn-primary,
+  .modal-footer .btn-secondary,
+  .modal-footer .btn-danger { flex: 1; min-width: 80px; text-align: center; }
+}
+
+/* F) Smooth View Transitions */
+.view.active {
+  animation: viewFadeIn 0.18s ease both;
+}
+@keyframes viewFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* G) Toast + Scrolling + Touch-Targets */
+@media (max-width: 768px) {
+  .toast {
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+    max-width: 85%;
+    font-size: 13px;
+  }
+  .content-area, .modal-body {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+  .nav-item { min-height: 44px; }
+  .btn-primary, .btn-secondary, .btn-danger { min-height: 40px; }
+  .settings-container { max-width: 100%; }
+}
