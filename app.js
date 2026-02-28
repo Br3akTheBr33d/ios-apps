@@ -301,11 +301,22 @@ function setupEventListeners() {
   });
 
   document.querySelectorAll('.color-btn').forEach(btn => {
+    if (!btn.dataset.color) return; // Custom-Button hat kein data-color
     btn.addEventListener('click', () => {
       document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.selectedColor = btn.dataset.color;
     });
+  });
+
+  document.getElementById('workspaceColorInput')?.addEventListener('input', (e) => {
+    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+    state.selectedColor = e.target.value;
+    const customBtn = document.getElementById('colorBtnCustom');
+    if (customBtn) {
+      customBtn.classList.add('active', 'has-color');
+      customBtn.style.setProperty('--custom-color', e.target.value);
+    }
   });
 
   document.querySelectorAll('.note-color-btn').forEach(btn => {
@@ -540,7 +551,7 @@ function handleSearch(e) {
         icon: 'globe',
         title: t.title,
         subtitle: 'Geöffneter Tab',
-        action: () => window.open(t.url, '_blank'),
+        action: () => openUrl(t.url),
         tabId: t.id
       });
     }
@@ -719,7 +730,7 @@ async function handleContextMenuAction(action) {
   if (!tab) return;
   switch (action) {
     case 'open':
-      window.open(tab.url, '_blank');
+      openUrl(tab.url);
       break;
     case 'open-new-window':
       chrome.windows.create({ url: tab.url });
@@ -1016,7 +1027,7 @@ async function restoreSession(i) {
   if (!s?.tabs?.length) return;
   if (!confirm(s.tabs.length + ' Tabs aus "' + s.name + '" öffnen?')) return;
   for (const t of s.tabs) {
-    window.open(t.url, '_blank');
+    openUrl(t.url);
   }
   showToast(s.tabs.length + ' Tabs wiederhergestellt');
   if (state.currentView !== 'sessions') switchView('sessions');
@@ -1629,7 +1640,7 @@ async function openAllCollectionTabs(colId) {
   const ws = state.workspaces.find(w => w.id === state.currentWorkspaceId);
   const col = ws?.collections?.find(c => c.id === colId);
   if (!col?.tabs?.length) { showToast('Keine Tabs'); return; }
-  if (confirm(col.tabs.length + ' Tabs öffnen?')) { for (const t of col.tabs) window.open(t.url, '_blank'); showToast(col.tabs.length + ' Tabs geöffnet'); }
+  if (confirm(col.tabs.length + ' Tabs öffnen?')) { for (const t of col.tabs) openUrl(t.url); showToast(col.tabs.length + ' Tabs geöffnet'); }
 }
 
 function openCollectionModal(col = null) {
@@ -1708,7 +1719,15 @@ function openTabModal(colId = null, tab = null) {
   modal.classList.add('active');
 }
 
-function openUrl(url) { window.open(url, '_blank'); }
+function openUrl(url) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
 
 function openWorkspaceModal(ws = null) {
   const modal = document.getElementById('workspaceModal');
@@ -1724,6 +1743,7 @@ function openWorkspaceModal(ws = null) {
     state.selectedColor = ws.color;
     document.querySelectorAll('.icon-btn').forEach(b => b.classList.toggle('active', b.dataset.icon === ws.icon));
     document.querySelectorAll('.color-btn').forEach(b => b.classList.toggle('active', b.dataset.color === ws.color));
+    syncCustomColorBtn(ws.color);
   } else {
     state.editingWorkspace = null;
     title.textContent = 'Neuer Workspace';
@@ -1734,8 +1754,25 @@ function openWorkspaceModal(ws = null) {
     state.selectedColor = '#667eea';
     document.querySelectorAll('.icon-btn').forEach(b => b.classList.toggle('active', b.dataset.icon === 'briefcase'));
     document.querySelectorAll('.color-btn').forEach(b => b.classList.toggle('active', b.dataset.color === '#667eea'));
+    syncCustomColorBtn('#667eea');
   }
   modal.classList.add('active');
+}
+
+function syncCustomColorBtn(color) {
+  const colorInput = document.getElementById('workspaceColorInput');
+  if (colorInput) colorInput.value = color;
+  const customBtn = document.getElementById('colorBtnCustom');
+  if (!customBtn) return;
+  const isPreset = [...document.querySelectorAll('.color-btn:not(.color-btn-custom)')].some(b => b.dataset.color === color);
+  customBtn.classList.toggle('has-color', !isPreset);
+  if (!isPreset) {
+    customBtn.style.setProperty('--custom-color', color);
+    customBtn.classList.add('active');
+  } else {
+    customBtn.style.removeProperty('--custom-color');
+    customBtn.classList.remove('active');
+  }
 }
 
 async function refreshCurrentTabs() {
@@ -1762,7 +1799,7 @@ function renderCurrentSession() {
   c.querySelectorAll('.tab-card').forEach((card, i) => {
     const tid = parseInt(card.dataset.tabId);
     const tab = state.currentTabs[i];
-    card.addEventListener('click', () => window.open(tab.url, '_blank'));
+    card.addEventListener('click', () => openUrl(tab.url));
     card.addEventListener('contextmenu', (e) => showContextMenu(e, tab));
   });
   // iOS PWA: Tab-Close nicht möglich (keine chrome.tabs API)
@@ -2864,7 +2901,7 @@ function renderNewsItems(container, items, topicInfo) {
   container.querySelectorAll('.news-item').forEach(item => {
     item.addEventListener('click', () => {
       const url = item.dataset.url;
-      if (url) window.open(url, '_blank');
+      if (url) openUrl(url);
     });
   });
 }
