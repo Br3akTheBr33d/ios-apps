@@ -162,6 +162,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   console.log('Redirect URI:', getRedirectUri());
   registerAllWidgets();
   await loadData();
+  await checkOAuthCallback();
   setupEventListeners();
   setupContextMenu();
   setupTabChangeListener();
@@ -1294,13 +1295,13 @@ async function getDriveAccessToken(interactive = false) {
 }
 
 async function launchWebAuthFlowForToken() {
-  const redirectUri = chrome.identity.getRedirectURL();
-  console.log('Redirect URI:', redirectUri);
-  
   if (!OAUTH_CONFIG.clientId) {
-    throw new Error('Keine Google OAuth Client-ID im Manifest (oauth2.client_id) konfiguriert.');
+    throw new Error('Keine Google OAuth Client-ID konfiguriert.');
   }
-  
+
+  const redirectUri = getRedirectUri();
+  console.log('PWA OAuth: redirectUri =', redirectUri);
+
   const authParams = new URLSearchParams({
     client_id: OAUTH_CONFIG.clientId,
     redirect_uri: redirectUri,
@@ -1308,49 +1309,44 @@ async function launchWebAuthFlowForToken() {
     scope: OAUTH_CONFIG.scopes.join(' '),
     prompt: 'consent'
   });
-  
+
   const authUrl = OAUTH_CONFIG.authEndpoint + '?' + authParams.toString();
-  console.log('Starting OAuth flow...');
-  
-  try {
-    const responseUrl = await chrome.identity.launchWebAuthFlow({
-      url: authUrl,
-      interactive: true
-    });
-    
-    console.log('OAuth completed, parsing token...');
-    
-    const url = new URL(responseUrl);
-    const hashParams = new URLSearchParams(url.hash.substring(1));
-    const accessToken = hashParams.get('access_token');
-    const expiresIn = parseInt(hashParams.get('expires_in') || '3600', 10);
-    
-    if (!accessToken) {
-      const error = hashParams.get('error');
-      const errorDesc = hashParams.get('error_description');
-      throw new Error(errorDesc || error || 'Kein Token erhalten');
-    }
-    
-    driveBackupSettings.accessToken = accessToken;
-    driveBackupSettings.tokenExpiry = Date.now() + expiresIn * 1000;
-    await persistDriveBackupSettings();
-    
-    console.log('Token erhalten, gültig für', expiresIn, 'Sekunden');
-    return accessToken;
-    
-  } catch (e) {
-    console.error('OAuth failed:', e);
-    if (e.message?.includes('canceled') || e.message?.includes('user closed')) {
-      throw new Error('Anmeldung abgebrochen');
-    }
-    if (e.message?.includes('invalid_client')) {
-      throw new Error('Client-ID ungültig');
-    }
-    if (e.message?.includes('redirect_uri_mismatch')) {
-      throw new Error('Redirect URI fehlt in Google Console: ' + getRedirectUri());
-    }
-    throw new Error('OAuth Fehler: ' + e.message);
-  }
+  console.log('PWA OAuth: Weiterleitung zu Google...');
+
+  // Merken dass OAuth gestartet wurde (für Rückkehr)
+  sessionStorage.setItem('wp_oauth_pending', '1');
+
+  // Seite zu Google OAuth weiterleiten — läuft nach dieser Zeile nicht mehr
+  window.location.href = authUrl;
+
+  return new Promise(() => {}); // hängt bis Seite wegnavigiert
+}
+
+async function checkOAuthCallback() {
+  const hash = window.location.hash;
+  if (!hash) return;
+
+  const hashParams = new URLSearchParams(hash.substring(1));
+  const accessToken = hashParams.get('access_token');
+  if (!accessToken) return;
+
+  // Token aus der Adressleiste entfernen
+  window.history.replaceState({}, '', window.location.pathname);
+  sessionStorage.removeItem('wp_oauth_pending');
+
+  const expiresIn = parseInt(hashParams.get('expires_in') || '3600', 10);
+
+  // Bestehende Einstellungen laden, Token eintragen
+  const stored = await chrome.storage.local.get(['driveBackup']);
+  driveBackupSettings = stored.driveBackup || { ...DEFAULT_DRIVE_SETTINGS };
+  driveBackupSettings.accessToken = accessToken;
+  driveBackupSettings.tokenExpiry = Date.now() + expiresIn * 1000;
+  driveBackupSettings.connected = true;
+  await persistDriveBackupSettings();
+
+  console.log('OAuth callback: Token gespeichert, gültig für', expiresIn, 'Sekunden');
+  // Toast wird nach render() angezeigt
+  setTimeout(() => showToast('Google Drive verbunden!'), 500);
 }
 
 async function removeCachedTokenSafe(token) {
@@ -2525,65 +2521,71 @@ function retryWeather(widgetId) {
 // =====================================================
 
 const NEWS_TOPICS = {
-  'ai-news': {
-    name: 'AI News',
-    icon: '🤖',
-    feed: 'https://www.artificialintelligence-news.com/feed/',
-    color: '#8b5cf6'
+  'tagesschau': {
+    name: 'Tagesschau',
+    icon: '📺',
+    feed: 'https://www.tagesschau.de/xml/rss2/',
+    color: '#003c8f'
   },
-  'ai-venturebeat': {
-    name: 'VentureBeat AI',
+  'heise': {
+    name: 'Heise Online',
+    icon: '💻',
+    feed: 'https://www.heise.de/rss/heise-atom.xml',
+    color: '#cc0000'
+  },
+  'golem': {
+    name: 'Golem.de',
+    icon: '🔧',
+    feed: 'https://rss.golem.de/rss.php?feed=RSS2.0',
+    color: '#e0820a'
+  },
+  't3n': {
+    name: 't3n',
     icon: '🚀',
-    feed: 'https://venturebeat.com/category/ai/feed/',
-    color: '#ec4899'
+    feed: 'https://t3n.de/rss.xml',
+    color: '#f0c419'
   },
-  'openai': {
-    name: 'OpenAI Blog',
-    icon: '🧠',
-    feed: 'https://openai.com/blog/rss.xml',
-    color: '#10b981'
+  'spiegel': {
+    name: 'Spiegel Online',
+    icon: '📰',
+    feed: 'https://www.spiegel.de/schlagzeilen/tops/index.rss',
+    color: '#e8001a'
   },
-  'anthropic': {
-    name: 'Anthropic / Claude',
-    icon: '🔮',
-    feed: 'https://www.anthropic.com/rss.xml',
-    color: '#d97706'
+  'zeit': {
+    name: 'Zeit Online',
+    icon: '⏰',
+    feed: 'https://newsfeed.zeit.de/all',
+    color: '#5a5a5a'
   },
-  'azure': {
-    name: 'Microsoft Azure',
-    icon: '☁️',
-    feed: 'https://azure.microsoft.com/en-us/blog/feed/',
-    color: '#0078d4'
+  'sueddeutsche': {
+    name: 'Süddeutsche Zeitung',
+    icon: '🗞️',
+    feed: 'https://rss.sueddeutsche.de/rss/Top-Themen',
+    color: '#e10000'
   },
-  'm365': {
-    name: 'Microsoft 365',
-    icon: '📊',
-    feed: 'https://www.microsoft.com/en-us/microsoft-365/blog/feed/',
-    color: '#d83b01'
+  'faz': {
+    name: 'FAZ',
+    icon: '📄',
+    feed: 'https://www.faz.net/rss/aktuell/',
+    color: '#0046a3'
   },
-  'google-ai': {
-    name: 'Google AI',
-    icon: '🔍',
-    feed: 'https://blog.google/technology/ai/rss/',
-    color: '#4285f4'
+  'welt': {
+    name: 'Welt',
+    icon: '🌍',
+    feed: 'https://www.welt.de/feeds/latest.rss',
+    color: '#004b8d'
   },
-  'techcrunch-ai': {
-    name: 'TechCrunch AI',
-    icon: '📱',
-    feed: 'https://techcrunch.com/category/artificial-intelligence/feed/',
-    color: '#0a9e01'
+  'handelsblatt': {
+    name: 'Handelsblatt',
+    icon: '💼',
+    feed: 'https://www.handelsblatt.com/contentexport/feed/schlagzeilen',
+    color: '#e4002b'
   },
-  'mit-ai': {
-    name: 'MIT AI News',
-    icon: '🎓',
-    feed: 'https://news.mit.edu/rss/topic/artificial-intelligence2',
-    color: '#a31f34'
-  },
-  'the-verge': {
-    name: 'The Verge Tech',
-    icon: '⚡',
-    feed: 'https://www.theverge.com/rss/index.xml',
-    color: '#fa4b2a'
+  'all-ai': {
+    name: 'All-AI.de',
+    icon: '🤖',
+    feed: 'https://www.all-ai.de/component/jmap/sitemap/gnews?format=gnews',
+    color: '#8b5cf6'
   }
 };
 
@@ -2594,8 +2596,8 @@ function renderNewsWidget(widget) {
   const body = document.getElementById('widget-body-' + widget.id);
   if (!body) return;
 
-  const topic = widget.config.topic || 'ai-news';
-  const topicInfo = NEWS_TOPICS[topic] || NEWS_TOPICS['ai-news'];
+  const topic = widget.config.topic || 'tagesschau';
+  const topicInfo = NEWS_TOPICS[topic] || NEWS_TOPICS['tagesschau'];
 
   body.innerHTML = `
     <div style="display: flex; flex-direction: column; height: 100%;">
@@ -2658,8 +2660,8 @@ async function fetchNews(widget, forceRefresh = false) {
 
   if (!container) return;
 
-  const topic = widget.config.topic || 'ai-news';
-  const topicInfo = NEWS_TOPICS[topic] || NEWS_TOPICS['ai-news'];
+  const topic = widget.config.topic || 'tagesschau';
+  const topicInfo = NEWS_TOPICS[topic] || NEWS_TOPICS['tagesschau'];
 
   // Update source display
   if (sourceEl) sourceEl.textContent = topicInfo.name;
@@ -3160,7 +3162,7 @@ function openNewsSettings(widget) {
   const content = document.getElementById('widgetSettingsContent');
   if (!content) return;
 
-  const currentTopic = widget.config.topic || 'ai-news';
+  const currentTopic = widget.config.topic || 'tagesschau';
 
   content.innerHTML = `
     <div class="form-group">

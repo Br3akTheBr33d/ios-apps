@@ -50,8 +50,15 @@
       lastError: null
     },
     identity: {
-      // Kein chrome.identity auf iOS — OAuth2 läuft über window.open
-      getAuthToken: () => { throw new Error('chrome.identity nicht verfügbar'); }
+      // Kein chrome.identity auf iOS — OAuth2 läuft über Seiten-Redirect
+      getAuthToken: () => { throw new Error('chrome.identity.getAuthToken nicht verfügbar'); },
+      getRedirectURL: () => 'https://br3akthebr33d.github.io/workspace-pro-ios/',
+      launchWebAuthFlow: async ({ url }) => {
+        // Fallback — wird durch launchWebAuthFlowForToken() in app.js abgefangen
+        window.location.href = url;
+        return new Promise(() => {});
+      },
+      removeCachedAuthToken: async () => {}
     },
     tabs: {
       query: async () => [],
