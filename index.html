@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <!-- PWA Meta Tags -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ff3366">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Workspace Pro">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>Workspace Pro</title>
+  <link rel="stylesheet" href="dashboard.css">
+  <!-- Current Session ausblenden (iOS: keine chrome.tabs API) -->
+  <style>
+    .nav-item[data-view="sessions"] { display: none !important; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+          </span>
+          <span class="logo-text">Tims Workspace Pro</span>
+        </div>
+      </div>
+      <div class="sidebar-search">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+        <input type="text" id="searchInput" placeholder="Suchen..." />
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-header"><span>VIEWS</span></div>
+          <a href="#" class="nav-item active" data-view="home"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1l-7 7h2v6h4v-4h2v4h4V8h2L8 1z"/></svg><span>Home</span></a>
+          <a href="#" class="nav-item" data-view="sessions"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="3"/></svg><span>Current Session</span></a>
+          <a href="#" class="nav-item" data-view="workspaces"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zm8 0A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm-8 8A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm8 0A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3z"/></svg><span>Workspaces</span><span class="nav-badge" id="workspacesCount">0</span></a>
+          <a href="#" class="nav-item" data-view="history"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/><path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/></svg><span>Session-Verlauf</span><span class="nav-badge" id="historyCount">0</span></a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-header"><span>MY WORKSPACES</span><button class="btn-icon-small" id="addWorkspaceBtn" title="New Workspace">+</button></div>
+          <div id="workspacesList"></div>
+        </div>
+      </nav>
+      <div class="sidebar-footer"><button class="btn-secondary btn-small" id="settingsBtn">Settings</button></div>
+    </aside>
+    <main class="main-content">
+      <div id="home-view" class="view active">
+        <div class="view-header">
+          <div><h1>Home</h1><p class="subtitle">Dein Dashboard</p></div>
+          <div class="view-actions"><button class="btn-primary" id="addWidgetBtn">+ Widget hinzufuegen</button></div>
+        </div>
+        <div class="content-area">
+          <div id="widgetGrid" class="widget-grid"></div>
+        </div>
+      </div>
+      <div id="sessions-view" class="view">
+        <div class="view-header">
+          <div><h1>Current Browser Session</h1><p class="subtitle">Deine aktuell geöffneten Tabs</p></div>
+          <div class="view-actions">
+            <button class="btn-secondary" id="saveToHistoryBtn">Im Verlauf speichern</button>
+            <button class="btn-secondary" id="refreshSessionBtn">Refresh</button>
+            <button class="btn-secondary" id="groupTabsBtn">Tabs gruppieren</button>
+            <button class="btn-secondary" id="ungroupTabsBtn">Gruppierung aufheben</button>
+            <button class="btn-primary" id="saveSessionBtn">Zu Collection</button>
+          </div>
+        </div>
+        <div class="content-area">
+          <div class="session-info"><div class="session-stat"><span class="stat-value" id="tabCount">0</span><span class="stat-label">Open Tabs</span></div><div class="session-stat"><span class="stat-value" id="windowCount">0</span><span class="stat-label">Windows</span></div><div class="session-stat"><span class="stat-value" id="categoryCount">0</span><span class="stat-label">Kategorien</span></div></div>
+          <div id="currentTabs" class="tabs-grid"></div>
+        </div>
+      </div>
+      <div id="workspaces-view" class="view">
+        <div class="view-header">
+          <div><h1>Workspaces</h1><p class="subtitle">Organisiere deine Collections nach Kontext</p></div>
+          <div class="view-actions"><button class="btn-primary" id="newWorkspaceBtn">+ Neuer Workspace</button></div>
+        </div>
+        <div class="content-area"><div id="workspacesGrid" class="workspaces-grid"></div></div>
+      </div>
+      <div id="workspace-detail-view" class="view">
+        <div class="view-header">
+          <div class="breadcrumb"><a href="#" id="backToWorkspaces">Workspaces</a><span class="breadcrumb-separator">/</span><span id="currentWorkspaceName">Workspace</span></div>
+          <div class="view-actions"><button class="btn-icon" id="editWorkspaceBtn" title="Edit"><svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168l10-10z"/></svg></button><button class="btn-primary" id="newCollectionBtn">+ Neue Collection</button></div>
+        </div>
+        <div class="content-area"><div id="collectionsContainer"></div></div>
+      </div>
+      <div id="history-view" class="view">
+        <div class="view-header"><div><h1>Session-Verlauf</h1><p class="subtitle">Gespeicherte Browser-Sessions</p></div></div>
+        <div class="content-area"><div id="historyContainer"></div></div>
+      </div>
+      <div id="settings-view" class="view">
+        <div class="view-header"><div><h1>Settings</h1><p class="subtitle">Backup & Configuration</p></div></div>
+        <div class="content-area">
+          <div class="settings-container">
+            <div class="settings-section">
+              <h3>Erscheinungsbild</h3>
+              <div class="settings-group">
+                <div class="theme-switcher" id="themeSwitcher">
+                  <button class="theme-btn active" data-theme="" title="Crimson Cyber">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #0a0a0a 50%, #ff3366 100%);"></span>
+                    <span class="theme-name">Crimson</span>
+                  </button>
+                  <button class="theme-btn" data-theme="theme-matrix" title="Neon Matrix">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #030a03 50%, #ff3366 100%);"></span>
+                    <span class="theme-name">Matrix</span>
+                  </button>
+                  <button class="theme-btn" data-theme="theme-blood-moon" title="Blood Moon">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #0a0500 50%, #ff3366 100%);"></span>
+                    <span class="theme-name">Blood Moon</span>
+                  </button>
+                  <button class="theme-btn" data-theme="theme-void-red" title="Void Red">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #05000f 50%, #ff3366 100%);"></span>
+                    <span class="theme-name">Void Red</span>
+                  </button>
+                  <button class="theme-btn" data-theme="theme-inferno" title="Inferno">
+                    <span class="theme-preview" style="background: linear-gradient(135deg, #0d0200 50%, #ff3333 100%);"></span>
+                    <span class="theme-name">Inferno</span>
+                  </button>
+                </div>
+                <p class="setting-description">Wähle ein Farbschema. Alle Themes verwenden Rot als primäre Akzentfarbe.</p>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Backup & Data</h3>
+              <div class="settings-group"><button class="btn-primary" id="exportDataBtn">Export All Data (JSON)</button><p class="setting-description">Download all workspaces, collections, and tabs as JSON file</p></div>
+              <div class="settings-group"><button class="btn-secondary" id="importDataBtn">Import Data</button><p class="setting-description">Import previously exported JSON file</p><input type="file" id="importFileInput" accept=".json" style="display: none;"></div>
+              <div class="settings-group"><button class="btn-danger" id="clearAllDataBtn">Clear All Data</button><p class="setting-description"> Warning: This will delete everything!</p></div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Google Drive Backup</h3>
+              <div class="settings-group">
+                <button class="btn-primary" id="driveConnectBtn">Mit Google Drive verbinden</button>
+                <button class="btn-secondary" id="driveDisconnectBtn" style="display: none;">Verbindung trennen</button>
+                <p id="driveStatus" class="sync-status"></p>
+                <p class="setting-description">Sichert deine Workspaces &amp; Sessions in deinem privaten Drive-AppData-Ordner (nicht sichtbar in "Mein Drive").</p>
+              </div>
+              <div class="settings-group">
+                <div class="sync-toggle-row">
+                  <label class="sync-label">
+                    <span>Auto-Backup bei Änderungen</span>
+                    <input type="checkbox" id="driveAutoToggle" class="sync-checkbox">
+                  </label>
+                </div>
+                <p class="setting-description">Wenn aktiviert, wird nach Änderungen automatisch ein Drive-Backup aktualisiert (mit kurzer Verzögerung).</p>
+              </div>
+              <div class="settings-group">
+                <button class="btn-secondary" id="driveBackupNowBtn" disabled>Jetzt in Drive sichern</button>
+                <button class="btn-secondary" id="driveRestoreBtn" disabled>Aus Drive wiederherstellen</button>
+                <p class="setting-description">Manuelle Sicherung / Wiederherstellung.</p>
+              </div>
+            </div>
+
+            <div class="settings-section">
+              <h3>Information</h3>
+              <div class="settings-info">
+                <p><strong>Version:</strong> <span>3.4.0 iOS PWA</span></p>
+                <p><strong>Workspaces:</strong> <span id="infoWorkspaceCount">0</span></p>
+                <p><strong>Collections:</strong> <span id="infoCollectionCount">0</span></p>
+                <p><strong>Tabs/Links:</strong> <span id="infoTabCount">0</span></p>
+                <p><strong>Sessions:</strong> <span id="infoHistoryCount">0</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div id="workspaceModal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header"><h2 id="workspaceModalTitle">New Workspace</h2><button class="btn-icon modal-close">×</button></div>
+      <div class="modal-body">
+        <div class="form-group"><label>Name</label><input type="text" id="workspaceName" placeholder="e.g., Cloud Design, Homelab"></div>
+        <div class="form-group"><label>Description</label><textarea id="workspaceDescription" placeholder="Optional description..."></textarea></div>
+        <div class="form-group"><label>Icon</label>
+          <div class="icon-picker">
+            <button class="icon-btn active" data-icon="briefcase" title="Briefcase">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="3"/><path d="M16 7V5.5A2.5 2.5 0 0 0 13.5 3h-3A2.5 2.5 0 0 0 8 5.5V7"/><line x1="2" y1="12" x2="22" y2="12" opacity="0.5" stroke-width="1"/></svg>
+            </button>
+            <button class="icon-btn" data-icon="home" title="Home">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V21a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V10.5z"/><polyline points="9 22 9 13 15 13 15 22"/></svg>
+            </button>
+            <button class="icon-btn" data-icon="rocket" title="Rocket">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/><circle cx="16.5" cy="7.5" r="1" fill="currentColor" stroke="none"/></svg>
+            </button>
+            <button class="icon-btn" data-icon="zap" title="Lightning">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            </button>
+            <button class="icon-btn" data-icon="tool" title="Tools">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+            </button>
+            <button class="icon-btn" data-icon="palette" title="Design">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/><circle cx="8.5" cy="9" r="1.2" fill="currentColor" stroke="none"/><circle cx="13.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/><circle cx="17" cy="10.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+            </button>
+            <button class="icon-btn" data-icon="book" title="Learning">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><line x1="8" y1="7" x2="16" y2="7" stroke-width="1" opacity="0.5"/><line x1="8" y1="11" x2="13" y2="11" stroke-width="1" opacity="0.5"/></svg>
+            </button>
+            <button class="icon-btn" data-icon="target" title="Goals">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+            </button>
+            <button class="icon-btn" data-icon="laptop" title="Development">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/><rect x="6" y="7" width="5" height="3" rx="1" stroke-width="1" opacity="0.5"/></svg>
+            </button>
+            <button class="icon-btn" data-icon="globe" title="Web">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+            </button>
+            <button class="icon-btn" data-icon="cloud" title="Cloud">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg>
+            </button>
+            <button class="icon-btn" data-icon="folder" title="Files">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="6" y1="14" x2="12" y2="14" stroke-width="1" opacity="0.5"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-group"><label>Color</label>
+          <div class="color-picker">
+            <button class="color-btn active" data-color="#667eea" style="background: #667eea;"></button>
+            <button class="color-btn" data-color="#f093fb" style="background: #f093fb;"></button>
+            <button class="color-btn" data-color="#4facfe" style="background: #4facfe;"></button>
+            <button class="color-btn" data-color="#43e97b" style="background: #43e97b;"></button>
+            <button class="color-btn" data-color="#fa709a" style="background: #fa709a;"></button>
+            <button class="color-btn" data-color="#feca57" style="background: #feca57;"></button>
+            <button class="color-btn" data-color="#ff6348" style="background: #ff6348;"></button>
+            <button class="color-btn" data-color="#5f27cd" style="background: #5f27cd;"></button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn-secondary modal-close">×</button><button class="btn-danger" id="deleteWorkspaceBtn" style="margin-right: auto; display: none;">Delete</button><button class="btn-primary" id="saveWorkspaceBtn">Save</button></div>
+    </div>
+  </div>
+
+  <div id="collectionModal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header"><h2 id="collectionModalTitle">New Collection</h2><button class="btn-icon modal-close">×</button></div>
+      <div class="modal-body">
+        <div class="form-group"><label>Name</label><input type="text" id="collectionName" placeholder="e.g., Azure Docs, Docker Tools"></div>
+        <div class="form-group"><label>Collection Notes</label><textarea id="collectionNotes" placeholder="General notes about this collection..."></textarea></div>
+      </div>
+      <div class="modal-footer"><button class="btn-secondary modal-close">×</button><button class="btn-danger" id="deleteCollectionBtn" style="margin-right: auto; display: none;">Delete</button><button class="btn-primary" id="saveCollectionBtn">Save</button></div>
+    </div>
+  </div>
+
+  <div id="tabModal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header"><h2 id="tabModalTitle">Add Tab/Link</h2><button class="btn-icon modal-close">×</button></div>
+      <div class="modal-body">
+        <div class="form-group"><label>Title</label><input type="text" id="tabTitle" placeholder="e.g., Azure Portal, GitHub Repo"></div>
+        <div class="form-group"><label>URL</label><input type="url" id="tabUrl" placeholder="https://..."></div>
+        <div class="form-group"><label>Notes</label><textarea id="tabNotes" placeholder="Notes about this tab/link..."></textarea></div>
+      </div>
+      <div class="modal-footer"><button class="btn-secondary modal-close">×</button><button class="btn-danger" id="deleteTabBtn" style="margin-right: auto; display: none;">Delete</button><button class="btn-primary" id="saveTabBtn">Save</button></div>
+    </div>
+  </div>
+
+  <div id="saveSessionModal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content large">
+      <div class="modal-header"><h2>Save Current Session to Collection</h2><button class="btn-icon modal-close">×</button></div>
+      <div class="modal-body">
+        <div class="form-group"><label>Workspace</label><select id="sessionWorkspace"><option value="">Select workspace...</option></select></div>
+        <div class="form-group"><label>Collection</label><select id="sessionCollection"><option value="">Select collection...</option><option value="__new__">+ Create new collection</option></select></div>
+        <div class="form-group" id="newCollectionGroup" style="display: none;"><label>New Collection Name</label><input type="text" id="newCollectionName" placeholder="Collection name"></div>
+        <div class="form-group"><label>Select Tabs to Save</label><div id="sessionTabsList" class="tabs-list-modal"></div></div>
+      </div>
+      <div class="modal-footer"><button class="btn-secondary modal-close">×</button><button class="btn-primary" id="confirmSaveSessionBtn">Save Selected Tabs</button></div>
+    </div>
+  </div>
+
+  <div id="noteModal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header"><h2>Neue Notiz</h2><button class="btn-icon modal-close">×</button></div>
+      <div class="modal-body">
+        <div class="form-group"><label>Notiz</label><textarea id="noteContent" placeholder="Notiz schreiben..." rows="4"></textarea></div>
+        <div class="form-group"><label>Farbe</label>
+          <div class="color-picker">
+            <button class="note-color-btn active" data-color="#feca57" style="background: #feca57;"></button>
+            <button class="note-color-btn" data-color="#ff6b6b" style="background: #ff6b6b;"></button>
+            <button class="note-color-btn" data-color="#4ecdc4" style="background: #4ecdc4;"></button>
+            <button class="note-color-btn" data-color="#a8e6cf" style="background: #a8e6cf;"></button>
+            <button class="note-color-btn" data-color="#dfe6e9" style="background: #dfe6e9;"></button>
+            <button class="note-color-btn" data-color="#fd79a8" style="background: #fd79a8;"></button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer"><button class="btn-secondary modal-close">×</button><button class="btn-danger" id="deleteNoteBtn" style="margin-right: auto; display: none;">Delete</button><button class="btn-primary" id="saveNoteBtn">Save</button></div>
+    </div>
+  </div>
+
+  <div id="collectionInfoModal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header"><h2 class="collection-info-name">Collection Info</h2><button class="btn-icon modal-close">×</button></div>
+      <div class="modal-body">
+        <div class="collection-info-stats"></div>
+        <div class="collection-info-domains"></div>
+      </div>
+      <div class="modal-footer"><button class="btn-secondary modal-close">×</button></div>
+    </div>
+  </div>
+
+  <div id="addToCollectionModal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header"><h2>Zu Collection hinzufügen</h2><button class="btn-icon modal-close">×</button></div>
+      <div class="modal-body">
+        <div class="add-to-collection-tab-info" style="display: flex; gap: 12px; padding: 12px; background: var(--bg-tertiary); border-radius: 8px; margin-bottom: 16px;"></div>
+        <div class="form-group"><label>Workspace</label><select id="addToCollectionWorkspace"><option value="">Workspace wählen...</option></select></div>
+        <div class="form-group"><label>Collection</label><select id="addToCollectionCollection"><option value="">Erst Workspace wählen...</option></select></div>
+      </div>
+      <div class="modal-footer"><button class="btn-secondary modal-close">×</button><button class="btn-primary" id="confirmAddToCollectionBtn">Hinzufügen</button></div>
+    </div>
+  </div>
+
+  <div id="widgetSettingsModal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header"><h2>Widget Settings</h2><button class="btn-icon modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div id="widgetSettingsContent"></div>
+      </div>
+      <div class="modal-footer"><button class="btn-secondary modal-close">&times;</button><button class="btn-primary" id="saveWidgetSettingsBtn">Speichern</button></div>
+    </div>
+  </div>
+
+  <div id="addWidgetModal" class="modal">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <div class="modal-header"><h2>Widget hinzufuegen</h2><button class="btn-icon modal-close">&times;</button></div>
+      <div class="modal-body">
+        <div id="widgetCatalog" class="widget-catalog"></div>
+      </div>
+      <div class="modal-footer"><button class="btn-secondary modal-close">&times;</button></div>
+    </div>
+  </div>
+
+  <script src="storage.js"></script>
+  <script src="app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+</body>
+</html>
