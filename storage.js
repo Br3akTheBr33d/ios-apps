@@ -52,7 +52,7 @@
     identity: {
       // Kein chrome.identity auf iOS — OAuth2 läuft über Seiten-Redirect
       getAuthToken: () => { throw new Error('chrome.identity.getAuthToken nicht verfügbar'); },
-      getRedirectURL: () => 'https://br3akthebr33d.github.io/ios-apps/',
+      getRedirectURL: () => { const b = window.location.origin + window.location.pathname; return b.endsWith('/') ? b : b + '/'; },
       launchWebAuthFlow: async ({ url }) => {
         // Fallback — wird durch launchWebAuthFlowForToken() in app.js abgefangen
         window.location.href = url;
