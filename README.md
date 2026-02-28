@@ -31,7 +31,7 @@ GitHub Pages ist kostenlos und funktioniert ohne eigenen Server:
    git init
    git add .
    git commit -m "Initial PWA"
-   git remote add origin https://github.com/DEIN-USERNAME/workspace-pro-ios.git
+   git remote add origin hhttps://github.com/Br3akTheBr33d/ios-apps.git
    git push -u origin main
    ```
 3. **GitHub Pages aktivieren:**
@@ -40,18 +40,27 @@ GitHub Pages ist kostenlos und funktioniert ohne eigenen Server:
 4. Nach ~1 Minute erreichbar unter:
    `https://DEIN-USERNAME.github.io/workspace-pro-ios/`
 
-### OAuth2-Redirect-URI anpassen (für Google Drive)
+### OAuth2 für Google Drive einrichten
 
-1. `app.js` öffnen — ganz oben in `getRedirectUri()`:
-   ```javascript
-   return 'https://DEIN-USERNAME.github.io/workspace-pro-ios/';
-   ```
-   `DEIN-USERNAME` durch deinen GitHub-Usernamen ersetzen
+**Schritt 1 — Neue OAuth2 Client ID anlegen:**
+1. [console.cloud.google.com](https://console.cloud.google.com) → dein Projekt
+2. APIs & Services → Credentials → **+ Create Credentials** → **OAuth 2.0 Client ID**
+3. Application type: **Web application**
+4. Name: `Workspace Pro iOS PWA`
+5. Authorized redirect URIs: `https://DEIN-USERNAME.github.io/workspace-pro-ios/` → Add → Create
+6. Die neue **Client ID** kopieren (endet auf `.apps.googleusercontent.com`)
 
-2. **Google Cloud Console:**
-   - APIs & Services → Credentials → OAuth 2.0 Client IDs
-   - Client bearbeiten → Autorisierte Redirect-URIs
-   - `https://DEIN-USERNAME.github.io/workspace-pro-ios/` hinzufügen → Speichern
+**Schritt 2 — Client ID in `storage.js` eintragen (Zeile 46):**
+```javascript
+client_id: 'DEINE-NEUE-CLIENT-ID.apps.googleusercontent.com',
+```
+
+**Schritt 3 — Redirect URI in `app.js` eintragen (Funktion `getRedirectUri`, ca. Zeile 153):**
+```javascript
+return 'https://DEIN-USERNAME.github.io/workspace-pro-ios/';
+```
+
+**Schritt 4 — Dateien committen und pushen, dann App im Safari neu laden**
 
 ---
 

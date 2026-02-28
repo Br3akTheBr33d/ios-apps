@@ -43,7 +43,7 @@
       getURL: path => path,
       getManifest: () => ({
         oauth2: {
-          client_id: '753612951771-jaia3qvk9rkhjb8lpj2u1odsnshpfnnt.apps.googleusercontent.com',
+          client_id: '753612951771-g1cgb975vgbvk6ao1p2orp46r146bqid.apps.googleusercontent.com',
           scopes: ['https://www.googleapis.com/auth/drive.appdata']
         }
       }),

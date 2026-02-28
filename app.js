@@ -152,7 +152,7 @@ async function getBrowserType() {
 function getRedirectUri() {
   // iOS PWA: GitHub Pages URL als Redirect-URI eintragen
   // Nach Deployment in Google Cloud Console → OAuth 2.0 Client → Autorisierte Redirect-URIs ergänzen
-  return 'https://YOUR-GITHUB-USERNAME.github.io/workspace-pro-ios/';
+  return 'https://br3akthebr33d.github.io/workspace-pro-ios/';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
