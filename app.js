@@ -171,6 +171,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   await refreshCurrentTabs();
   await checkAndCreateCurrentSession();
   render();
+  await checkForRemoteChanges();
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) checkForRemoteChanges();
+  });
   console.log('Dashboard ready');
 });
 
@@ -1529,9 +1533,9 @@ async function backupToGoogleDrive({ silent = false } = {}) {
   if (state.currentView === 'settings') renderSettings();
 }
 
-async function restoreFromGoogleDrive() {
+async function restoreFromGoogleDrive({ silent = false } = {}) {
   if (!driveBackupSettings.enabled) {
-    showToast('Drive nicht verbunden');
+    if (!silent) showToast('Drive nicht verbunden');
     return;
   }
 
@@ -1541,12 +1545,12 @@ async function restoreFromGoogleDrive() {
       encodeURIComponent(fileId) +
       '?alt=media',
     { method: 'GET' },
-    { interactive: true }
+    { interactive: !silent }
   );
   const data = await resp.json();
 
   if (!data?.workspaces) throw new Error('Ungültiges Backup');
-  if (!confirm('Aus Drive wiederherstellen?\n\nWorkspaces: ' + (data.workspaces?.length || 0))) return;
+  if (!silent && !confirm('Aus Drive wiederherstellen?\n\nWorkspaces: ' + (data.workspaces?.length || 0))) return;
 
   state._suspendDriveAutoBackup = true;
   state.workspaces = data.workspaces || [];
@@ -1557,9 +1561,34 @@ async function restoreFromGoogleDrive() {
   state._suspendDriveAutoBackup = false;
 
   driveBackupSettings.lastRestore = Date.now();
+  driveBackupSettings.lastBackup = Date.now();
   await persistDriveBackupSettings();
-  showToast('Aus Drive wiederhergestellt!');
-  switchView('workspaces');
+  if (!silent) {
+    showToast('Aus Drive wiederhergestellt!');
+    switchView('workspaces');
+  } else {
+    showToast('Sync: Neue Daten geladen');
+    render();
+  }
+}
+
+async function checkForRemoteChanges() {
+  if (!driveBackupSettings.enabled || !driveBackupSettings.fileId) return;
+  try {
+    const resp = await driveFetch(
+      'https://www.googleapis.com/drive/v3/files/' +
+        encodeURIComponent(driveBackupSettings.fileId) + '?fields=modifiedTime',
+      { method: 'GET' }, { interactive: false }
+    );
+    const meta = await resp.json();
+    const remoteTs = new Date(meta.modifiedTime).getTime();
+    const localTs = driveBackupSettings.lastBackup || 0;
+    if (remoteTs > localTs + 5000) {
+      await restoreFromGoogleDrive({ silent: true });
+    }
+  } catch (e) {
+    // Silently ignore — kein Internet oder Token abgelaufen
+  }
 }
 
 function closeModals() {
