@@ -117,6 +117,7 @@ const driveBackupSettings = {
 };
 
 let driveAutoBackupTimer = null;
+let preferredBrowser = 'safari';
 
 // =====================================================
 // OAUTH CONFIGURATION - BRAVE KOMPATIBEL
@@ -195,8 +196,9 @@ function setupTabChangeListener() {
 
 async function loadData() {
   try {
-    const syncResult = await chrome.storage.local.get(['driveBackup']);
+    const syncResult = await chrome.storage.local.get(['driveBackup', 'preferredBrowser']);
     const db = syncResult.driveBackup || {};
+    preferredBrowser = syncResult.preferredBrowser || 'safari';
     driveBackupSettings.enabled = !!db.enabled;
     driveBackupSettings.autoBackup = !!db.autoBackup;
     driveBackupSettings.fileId = db.fileId || null;
@@ -1207,6 +1209,15 @@ function renderSettings() {
       showToast('Alle Daten gelöscht');
     }
   };
+
+  const browserSelect = document.getElementById('preferredBrowserSelect');
+  if (browserSelect) {
+    browserSelect.value = preferredBrowser;
+    browserSelect.onchange = async (e) => {
+      preferredBrowser = e.target.value;
+      await chrome.storage.local.set({ preferredBrowser });
+    };
+  }
 }
 
 async function exportData() {
@@ -1753,7 +1764,21 @@ function openTabModal(colId = null, tab = null) {
 }
 
 function openUrl(url) {
-  // window.open mit _blank öffnet im iOS PWA Standalone-Modus den externen Safari
+  // Browser-spezifische URL-Schemas für iOS (WKWebView ignoriert den System-Default-Browser)
+  if (preferredBrowser === 'brave') {
+    window.location.href = 'brave://open-url?url=' + encodeURIComponent(url);
+    return;
+  }
+  if (preferredBrowser === 'chrome') {
+    const scheme = url.startsWith('https') ? 'googlechromes' : 'googlechrome';
+    window.location.href = scheme + '://open?url=' + encodeURIComponent(url);
+    return;
+  }
+  if (preferredBrowser === 'firefox') {
+    window.location.href = 'firefox://open-url?url=' + encodeURIComponent(url);
+    return;
+  }
+  // Safari (Standard): window.open öffnet im iOS PWA Standalone-Modus den externen Safari
   const win = window.open(url, '_blank', 'noopener,noreferrer');
   if (!win) {
     // Fallback falls Popup-Blocker aktiv

@@ -131,6 +131,24 @@
             </div>
 
             <div class="settings-section">
+              <h3>Browser</h3>
+              <div class="settings-group">
+                <div class="sync-toggle-row">
+                  <label class="sync-label">
+                    <span>Bevorzugter Browser</span>
+                    <select id="preferredBrowserSelect" style="background:#1a1a2e;color:#e0e0e0;border:1px solid #333;border-radius:6px;padding:6px 10px;font-size:14px;">
+                      <option value="safari">Safari</option>
+                      <option value="brave">Brave</option>
+                      <option value="chrome">Chrome</option>
+                      <option value="firefox">Firefox</option>
+                    </select>
+                  </label>
+                </div>
+                <p class="setting-description">Beim Antippen von Links wird dieser Browser geöffnet. Der Browser muss auf dem iPhone installiert sein.</p>
+              </div>
+            </div>
+
+            <div class="settings-section">
               <h3>Backup & Data</h3>
               <div class="settings-group"><button class="btn-primary" id="exportDataBtn">Export All Data (JSON)</button><p class="setting-description">Download all workspaces, collections, and tabs as JSON file</p></div>
               <div class="settings-group"><button class="btn-secondary" id="importDataBtn">Import Data</button><p class="setting-description">Import previously exported JSON file</p><input type="file" id="importFileInput" accept=".json" style="display: none;"></div>
