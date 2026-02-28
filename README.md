@@ -10,7 +10,7 @@ Installierbar auf dem iPhone-Homescreen — kein App Store, keine Kosten.
 > **Wichtig:** Safari verwenden — Chrome auf iOS unterstützt PWA-Installation nicht.
 
 1. iPhone: **Safari** öffnen
-2. Diese URL aufrufen: `https://YOUR-GITHUB-USERNAME.github.io/workspace-pro-ios/`
+2. Diese URL aufrufen: `https://br3akthebr33d.github.io/ios-apps/`
 3. Unten auf das **Teilen-Symbol** tippen (Quadrat mit Pfeil nach oben)
 4. **"Zum Home-Bildschirm"** tippen
 5. Name bestätigen → **"Hinzufügen"** tippen
@@ -25,20 +25,20 @@ GitHub Pages ist kostenlos und funktioniert ohne eigenen Server:
 
 ### Schritt-für-Schritt
 
-1. **GitHub-Konto:** Neues Repository anlegen → Name: `workspace-pro-ios` (Public)
+1. **GitHub-Konto:** Neues Repository anlegen (Public)
 2. **Dateien hochladen:** Alle Dateien aus diesem Ordner ins Repo
    ```
    git init
    git add .
    git commit -m "Initial PWA"
-   git remote add origin hhttps://github.com/Br3akTheBr33d/ios-apps.git
+   git remote add origin https://github.com/DEIN-USERNAME/DEIN-REPO.git
    git push -u origin main
    ```
 3. **GitHub Pages aktivieren:**
    - Repo → Settings → Pages
    - Source: "Deploy from branch" → Branch: `main` → `/` (root) → Save
 4. Nach ~1 Minute erreichbar unter:
-   `https://DEIN-USERNAME.github.io/workspace-pro-ios/`
+   `https://DEIN-USERNAME.github.io/DEIN-REPO/`
 
 ### OAuth2 für Google Drive einrichten
 
@@ -47,7 +47,7 @@ GitHub Pages ist kostenlos und funktioniert ohne eigenen Server:
 2. APIs & Services → Credentials → **+ Create Credentials** → **OAuth 2.0 Client ID**
 3. Application type: **Web application**
 4. Name: `Workspace Pro iOS PWA`
-5. Authorized redirect URIs: `https://DEIN-USERNAME.github.io/workspace-pro-ios/` → Add → Create
+5. Authorized redirect URIs: `https://DEIN-USERNAME.github.io/DEIN-REPO/` → Add → Create
 6. Die neue **Client ID** kopieren (endet auf `.apps.googleusercontent.com`)
 
 **Schritt 2 — Client ID in `storage.js` eintragen (Zeile 46):**
@@ -55,12 +55,11 @@ GitHub Pages ist kostenlos und funktioniert ohne eigenen Server:
 client_id: 'DEINE-NEUE-CLIENT-ID.apps.googleusercontent.com',
 ```
 
-**Schritt 3 — Redirect URI in `app.js` eintragen (Funktion `getRedirectUri`, ca. Zeile 153):**
-```javascript
-return 'https://DEIN-USERNAME.github.io/workspace-pro-ios/';
-```
+**Schritt 3 — Dateien committen und pushen, dann App im Safari neu laden**
 
-**Schritt 4 — Dateien committen und pushen, dann App im Safari neu laden**
+> Die Redirect-URI wird automatisch aus der aktuellen URL der App abgeleitet —
+> kein manuelles Eintragen in `app.js` nötig. Nur in der Google Cloud Console
+> muss die URL exakt hinterlegt sein (inkl. abschließendem `/`).
 
 ---
 
@@ -119,9 +118,9 @@ mehr nötig, außer für:
 
 ```
 Workspace-Pro-IOS/
-├── index.html            Haupt-UI (angepasstes dashboard.html)
+├── index.html            Haupt-UI
 ├── dashboard.css         Styling + iOS Safe Area Anpassungen
-├── app.js                Hauptlogik (angepasstes dashboard.js)
+├── app.js                Hauptlogik
 ├── storage.js            localStorage-Adapter (ersetzt chrome.storage.local)
 ├── sw.js                 Service Worker (Offline-Cache)
 ├── manifest.webmanifest  PWA-Manifest (macht App installierbar)
@@ -144,9 +143,14 @@ Workspace-Pro-IOS/
 **Daten bleiben nicht gespeichert:**
 - Safari → Einstellungen → Datenschutz → Website-Daten → sicherstellen dass `github.io` nicht blockiert wird
 
-**Google Drive verbindet nicht:**
-- Redirect-URI in `app.js` und Google Cloud Console korrekt gesetzt?
-- Nach Änderungen an `app.js` → Repo pushen → App im Safari neu laden
+**Google Drive verbindet nicht (redirect_uri_mismatch):**
+- App in Safari öffnen → DevTools Konsole → nach `Redirect URI:` suchen
+- Diese URL exakt (inkl. `/` am Ende) in Google Cloud Console → OAuth Client → Authorized redirect URIs eintragen
+- Nach Änderungen in der Google Cloud Console: ca. 5 Minuten warten
+
+**Google Drive verbindet nicht (sonstiger Fehler):**
+- Client ID in `storage.js` korrekt eingetragen?
+- Repo pushen → App im Safari neu laden (Cache leeren)
 
 **Wetter-Widget zeigt nichts:**
 - Standort muss manuell eingetragen werden (Widget → Einstellungs-Icon → Ort suchen)
